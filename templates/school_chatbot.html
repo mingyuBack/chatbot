@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>학교 챗봇</title>
+    <meta charset="UTF-8">
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+        #chat-container { height: 500px; overflow-y: auto; border: 1px solid #ddd; padding: 20px; margin-bottom: 20px; background: #f9f9f9; }
+        .message { margin: 10px 0; padding: 10px; border-radius: 10px; }
+        .user { background: #007bff; color: white; margin-left: 20%; text-align: right; }
+        .bot { background: white; border: 1px solid #ddd; margin-right: 20%; }
+        #input-container { display: flex; gap: 10px; }
+        #message { flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 5px; }
+        button { padding: 10px 20px; background: #28a745; color: white; border: none; border-radius: 5px; cursor: pointer; }
+    </style>
+</head>
+<body>
+<h1>🏫 학교 학사일정 챗봇</h1>
+<div id="chat-container"></div>
+<div id="input-container">
+    <input type="text" id="message" placeholder="학사일정, 학과 정보 등을 물어보세요..." onkeypress="if(event.key==='Enter') sendMessage()">
+    <button onclick="sendMessage()">전송</button>
+</div>
+
+<script>
+    function addMessage(content, isUser) {
+        const container = document.getElementById('chat-container');
+        const message = document.createElement('div');
+        message.className = `message ${isUser ? 'user' : 'bot'}`;
+        message.textContent = content;
+        container.appendChild(message);
+        container.scrollTop = container.scrollHeight;
+    }
+
+    async function sendMessage() {
+        const input = document.getElementById('message');
+        const message = input.value.trim();
+        if (!message) return;
+
+        addMessage(message, true);
+        input.value = '';
+
+        try {
+            const response = await fetch('/chat', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({message: message})
+            });
+            const data = await response.json();
+            addMessage(data.answer || data.error, false);
+        } catch (error) {
+            addMessage('오류가 발생했습니다: ' + error.message, false);
+        }
+    }
+</script>
+</body>
+</html>
